@@ -189,7 +189,7 @@ abstract class RefChecks extends Transform {
         def varargBridge(member: Symbol, bridgetpe: Type): Tree = {
           log(s"Generating varargs bridge for ${member.fullLocationString} of type $bridgetpe")
 
-          val newFlags = (member.flags | VBRIDGE | ARTIFACT) & ~PRIVATE
+          val newFlags = (member.flags | VBRIDGE) & ~PRIVATE
           val bridge   = member.cloneSymbolImpl(clazz, newFlags) setPos clazz.pos
           bridge.setInfo(bridgetpe.cloneInfo(bridge))
           clazz.info.decls enter bridge
@@ -1130,7 +1130,7 @@ abstract class RefChecks extends Transform {
     }
     /** Sensibility check examines flavors of equals. */
     def checkSensible(pos: Position, fn: Tree, args: List[Tree]) = fn match {
-      case Select(qual, name @ (nme.EQ | nme.NE | nme.eq | nme.ne)) if args.length == 1 && isObjectOrAnyComparisonMethod(fn.symbol) && !currentOwner.isSynthetic =>
+      case Select(qual, name @ (nme.EQ | nme.NE | nme.eq | nme.ne)) if args.length == 1 && isObjectOrAnyComparisonMethod(fn.symbol) && (!currentOwner.isSynthetic || currentOwner.isAnonymousFunction) =>
         checkSensibleEquals(pos, qual, name, fn.symbol, args.head)
       case _ =>
     }

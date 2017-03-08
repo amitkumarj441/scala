@@ -1,3 +1,5 @@
+package scala.build
+
 import sbt._
 import sbt.complete._, Parser._, Parsers._
 
@@ -24,6 +26,10 @@ object PartestUtil {
       isParentOf(testBase / srcPath, f, 2) || isParentOf(f, testBase / srcPath, Int.MaxValue)
     }
   }
+
+  def testFilePaths(globalBase: File, testBase: File): Seq[java.io.File] =
+    (new TestFiles("files", globalBase, testBase)).allTestCases.map(_._1)
+
   /** A parser for the custom `partest` command */
   def partestParser(globalBase: File, testBase: File): Parser[String] = {
     val knownUnaryOptions = List(
@@ -90,6 +96,6 @@ object PartestUtil {
     val ScalacOptsParser = (token("-Dpartest.scalac_opts=") ~ token(NotSpace)) map { case opt ~ v => opt + v }
 
     val P = oneOf(knownUnaryOptions.map(x => token(x))) | SrcPath | TestPathParser | Grep | ScalacOptsParser
-    (Space ~> repsep(P, oneOrMore(Space))).map(_.mkString(" ")).?.map(_.getOrElse("")) <~ OptSpace
+    (Space ~> repsep(P, oneOrMore(Space))).map(_.mkString(" ")).?.map(_.getOrElse(""))
   }
 }
